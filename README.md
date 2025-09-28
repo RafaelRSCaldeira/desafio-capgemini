@@ -11,7 +11,7 @@
 To run the dev server for your app, use:
 
 ```sh
-npx nx dev desafio-capgemini
+npx nx dev 
 ```
 
 To create a production bundle:
