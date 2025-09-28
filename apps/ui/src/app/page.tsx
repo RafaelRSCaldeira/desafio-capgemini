@@ -4,10 +4,11 @@ import Message from '@/components/message';
 import SearchBar from '@/components/search_bar';
 import { mockMessages } from '@/mock/mock_messages';
 import { ChatMessage } from '@/type/message';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Page() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const updateMessages = async (message: string): Promise<void> => {
     setMessages((prev) => [
@@ -29,12 +30,13 @@ export default function Page() {
         systemMessage = { role: 'system', message: 'Erro ao chamar a API' };
       } else {
         const content = await response.json();
-        systemMessage = { role: 'system', message: content.message };
+        systemMessage = { role: 'system', message: content.message.message };
       }
 
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = systemMessage;
+        console.log(updated);
         return updated;
       });
     } catch (err) {
@@ -49,6 +51,10 @@ export default function Page() {
     }
   };
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   return (
     <>
       <main className="overflow-hidden bg-background w-full min-h-screen flex items-center flex-col pt-20">
@@ -59,6 +65,7 @@ export default function Page() {
               <hr className="border-secondary_gray text" />
             </>
           ))}
+          <div ref={bottomRef} />
         </section>
         <div className="w-main_content_width fixed bottom-20">
           <SearchBar callback={updateMessages} />
