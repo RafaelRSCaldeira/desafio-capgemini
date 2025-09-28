@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
   return NextResponse.json(
-    { ok: true, message: parsed.data.message },
+    { ok: true, message: "teste" },
     { status: 201 }
   );
 }
