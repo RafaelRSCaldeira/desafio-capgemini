@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
-  const response = await fetch(process.env.AI_API || "", {
+  const response = await fetch(process.env.AI_API || "http://localhost:8000/ai/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
