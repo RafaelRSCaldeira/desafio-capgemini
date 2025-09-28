@@ -6,7 +6,8 @@
   --primary-blue: #003653;
   --primary-gray: #d7d8da;
   --secondary-gray: #323539;
-  --background: #191c1f
+  --background: #191c1f;
+  --main-content-width: 1000px;
 }
 
 html {

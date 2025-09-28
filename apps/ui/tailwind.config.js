@@ -22,7 +22,10 @@ module.exports = {
         primary_blue: "var(--primary-blue)",
         primary_gray: "var(--primary-gray)",
         secondary_gray: "var(--secondary-gray)",
-        background: "var(--background)"
+        background: "var(--background)",
+      },
+      width: {
+        main_content_width: "var(--main-content-width)"
       }
     },
   },

@@ -1,17 +1,14 @@
-type MessageProps = {
-  message: string;
-  type: 'system' | 'user';
-};
+import { ChatMessage } from "@/type/message";
 
-export default function Message({ message, type }: MessageProps) {
+export default function Message({ message, role }: ChatMessage) {
   return (
     <>
       <div
         className={`${
-          type === 'user'
-            ? 'bg-primary_blue w-1/2'
-            : 'bg-secondary_gray w-full'
-        } break-words text-white text-2xl p-4 rounded-md`}
+          role === 'user'
+            ? 'bg-primary_blue w-1/2 self-end'
+            : 'w-full'
+        } break-words text-white text-lg p-4 rounded-md h-fit`}
       >
         <p>{message}</p>
       </div>
