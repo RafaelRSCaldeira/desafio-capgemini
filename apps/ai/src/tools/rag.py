@@ -1,6 +1,7 @@
 import os
 import requests
 from typing import Dict, Any
+from langchain_core.tools import tool
 
 def _get_rag_service_url() -> str:
     """Obtém a URL do serviço RAG a partir das variáveis de ambiente."""
@@ -35,6 +36,7 @@ def _make_rag_request(query: str, k: int = 3) -> Dict[str, Any]:
     except Exception as e:
         raise Exception(f"Erro inesperado ao acessar o serviço RAG: {str(e)}")
 
+@tool
 def search_rag(query: str, k: int = 3) -> str:
     """
     Search the RAG database for the most relevant information.
@@ -65,6 +67,7 @@ def search_rag(query: str, k: int = 3) -> str:
     except Exception as e:
         return f"Erro na busca RAG: {str(e)}"
 
+@tool
 def rag_health_check() -> str:
     """Check if the RAG service is healthy and responding."""
     url = f"{_get_rag_service_url()}/rag/health/"

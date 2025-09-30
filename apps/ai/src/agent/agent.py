@@ -1,42 +1,43 @@
+from langgraph.graph import START, StateGraph, END # Adicionado END para clareza
+from langgraph.prebuilt import tools_condition, ToolNode
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langgraph.graph import MessagesState
 from langchain_ollama import ChatOllama
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import START, MessagesState, StateGraph
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-from langchain.tools import Tool
-from typing import Dict, Any
 
-from src.tools.csv_analyzer import analyze_csv
+from src.tools.rag import search_rag
+from src.tools.web_search import web_search
 
-# Configuração do modelo
-model = ChatOllama(model="llama3.2")
+sys_msg_content = """You are a helpful assistant.
+You have access to the following tools: 'search_rag' and 'web_search'.
+Use them when you need to find information to answer the user's question.
+Respond with a tool call when necessary.
+You must always use the search_rag tool before using the web_search tool."""
+sys_msg = SystemMessage(content=sys_msg_content)
 
-# Configuração do workflow
-workflow = StateGraph(state_schema=MessagesState)
+llm = ChatOllama(model="qwen3:latest", temperature=0)
+tools = [search_rag, web_search]
+llm_with_tools = llm.bind_tools(tools)
 
-# Tools disponíveis
-tools = [analyze_csv]
-model_with_tools = model.bind_tools(tools)
+def assistant(state: MessagesState):
+    result = llm_with_tools.invoke(state["messages"])
+    return {"messages": [result]}
 
-def call_model(state: MessagesState):
-    """Função que processa mensagens e pode usar tools"""
-    system_prompt = (
-        "You are a helpful assistant. You can analyze CSV files using the analyze_csv tool. "
-        "When users ask about CSV data, use the tool with either file_url or file_path parameter. "
-        "Answer all questions to the best of your ability."
-    )
-    messages = [SystemMessage(content=system_prompt)] + state["messages"]
-    response = model_with_tools.invoke(messages)
-    return {"messages": [response]}
+builder = StateGraph(MessagesState)
+
+builder.add_node("assistant", assistant)
+builder.add_node("tools", ToolNode(tools))
+
+builder.add_edge(START, "assistant")
+builder.add_conditional_edges(
+    "assistant",
+    tools_condition,
+)
+builder.add_edge("tools", "assistant")
+graph = builder.compile()
 
 def generate(message: str) -> str:
-    """Função simples para compatibilidade com o main.py atual"""
-    response = model.invoke(message)
-    return response
-
-# Configuração do workflow (se quiser usar StateGraph)
-workflow.add_node("agent", call_model)
-workflow.add_edge(START, "agent")
-workflow.set_entry_point("agent")
-
-# Compilar o workflow
-app = workflow.compile()
+    initial_state = {"messages": [sys_msg, HumanMessage(content=message)]}
+    final_state = graph.invoke(initial_state)
+    print(final_state)
+    answer = final_state["messages"][-1].content
+    return answer

@@ -17,8 +17,7 @@ def health():
 
 @app.post("/ai/generate/")
 def generate_(request: Request):
-    response = generate(request.message)
-    answer = response["messages"][-1].content
+    answer = generate(request.message)
     return {"message": answer}
 
 if __name__ == "__main__":
