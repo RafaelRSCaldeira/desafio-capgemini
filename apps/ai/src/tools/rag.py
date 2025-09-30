@@ -7,7 +7,7 @@ def _get_rag_service_url() -> str:
     """Obtém a URL do serviço RAG a partir das variáveis de ambiente."""
     return os.getenv("RAG_SERVICE_URL", "http://localhost:8080")
 
-def _make_rag_request(query: str, k: int = 3) -> Dict[str, Any]:
+def _make_rag_request(query: str, k: int = 10) -> Dict[str, Any]:
     """Faz requisição para o serviço RAG com tratamento de erros."""
     url = f"{_get_rag_service_url()}/rag/similar"
     payload = {
@@ -37,13 +37,13 @@ def _make_rag_request(query: str, k: int = 3) -> Dict[str, Any]:
         raise Exception(f"Erro inesperado ao acessar o serviço RAG: {str(e)}")
 
 @tool
-def search_rag(query: str, k: int = 3) -> str:
+def search_rag(query: str, k: int = 10) -> str:
     """
     Search the RAG database for the most relevant information.
     
     Args:
         query: Text to search for
-        k: Number of results to return (default: 3)
+        k: Number of results to return (default: 10)
     
     Returns:
         Formatted string with search results

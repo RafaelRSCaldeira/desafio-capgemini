@@ -5,13 +5,13 @@ import os
 from pydantic import BaseModel
 import sys
 
-from src.csv_chunk_processor import process_csvs_as_chunks, find_top_k_similar
+from src.csv_chunk_processor import process_csvs_as_chunks, find_top_k_rows
 
 app = FastAPI()
 
 class SimilarRequest(BaseModel):
     text: str
-    k: int | None = 3
+    k: int | None = 10
 
 _rag_client = None
 
@@ -25,10 +25,19 @@ def similar(req: SimilarRequest):
     if not req.text or not isinstance(req.text, str):
         raise HTTPException(status_code=400, detail="'text' must be a non-empty string")
     if _rag_client is None:
-        # Initialize in-memory qdrant and load mock CSVs
         _, _rag_client = process_csvs_as_chunks()
-    topk = find_top_k_similar(req.text, _rag_client, k=req.k or 3)
-    return {"results": topk}
+    # Use row-level semantic search that returns full rows with headers
+    topk = find_top_k_rows(req.text, _rag_client, k=10)
+    # Map to backward-compatible schema expected by the AI app
+    results = []
+    for item in topk:
+        results.append({
+            "value": item.get("value"),
+            "file": item.get("file"),
+            "score": item.get("score"),
+        })
+    print(results)
+    return {"results": results}
 
 if __name__ == "__main__":
     load_dotenv()
