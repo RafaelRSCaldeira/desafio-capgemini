@@ -1,0 +1,11 @@
+id,name,description,category,price,rating,features
+1,"Smartphone Galaxy S24","Smartphone Android com tela de 6.2 polegadas, câmera de 50MP, 128GB de armazenamento e bateria de 4000mAh","Eletrônicos",899.99,4.5,"Tela AMOLED, 5G, Câmera Tripla, Reconhecimento Facial"
+2,"Notebook Dell Inspiron 15","Notebook com processador Intel i7, 16GB RAM, SSD 512GB, tela Full HD de 15.6 polegadas","Informática",1299.99,4.3,"Windows 11, Placa de Vídeo Dedicada, Teclado Iluminado"
+3,"Fone de Ouvido Sony WH-1000XM4","Fone de ouvido sem fio com cancelamento de ruído ativo e bateria de 30 horas","Áudio",299.99,4.7,"Bluetooth 5.0, Cancelamento de Ruído, Qualidade Hi-Res"
+4,"Smart TV Samsung 55","Smart TV 55 polegadas 4K UHD com HDR10+ e sistema operacional Tizen","TV e Vídeo",799.99,4.4,"4K UHD, HDR10+, Smart TV, Controle por Voz"
+5,"Câmera Canon EOS R6","Câmera mirrorless full-frame com sensor de 20.1MP e gravação 4K","Fotografia",2499.99,4.8,"Full-Frame, 4K, Estabilização de Imagem, Wi-Fi"
+6,"Tablet iPad Air","Tablet Apple com chip M1, tela Liquid Retina de 10.9 polegadas e suporte para Apple Pencil","Tablets",599.99,4.6,"Chip M1, Apple Pencil, Touch ID, 5G"
+7,"Console PlayStation 5","Console de videogame com SSD ultra-rápido e suporte a jogos 4K","Gaming",499.99,4.9,"4K, Ray Tracing, SSD, Controle DualSense"
+8,"Smartwatch Apple Watch Series 9","Relógio inteligente com GPS, monitoramento de saúde e resistência à água","Wearables",399.99,4.5,"GPS, ECG, Resistente à Água, Siri"
+9,"Monitor LG UltraWide 34","Monitor ultrawide de 34 polegadas com resolução 3440x1440 e taxa de atualização 144Hz","Monitores",499.99,4.4,"UltraWide, 144Hz, HDR10, USB-C"
+10,"Roteador Wi-Fi 6 TP-Link","Roteador Wi-Fi 6 com velocidade até 1.8Gbps e cobertura de 200m²","Rede",89.99,4.2,"Wi-Fi 6, 1.8Gbps, 4 Antenas, App de Controle"
