@@ -13,7 +13,7 @@ import pandas as pd
 # Adicionar o diretório src ao path para importar os módulos
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from csv_chunk_processor import CSVChunkProcessor, process_mock_csvs_as_chunks
+from csv_chunk_processor import CSVChunkProcessor, process_csvs_as_chunks
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
@@ -26,8 +26,8 @@ class TestRAGClient(unittest.TestCase):
         """Configuração inicial para todos os testes."""
         print("\n=== Configurando ambiente de teste ===")
         
-        # Processar CSVs mock e criar coleção
-        cls.results, cls.client = process_mock_csvs_as_chunks()
+        # Processar CSVs reais e criar coleção
+        cls.results, cls.client = process_csvs_as_chunks()
         cls.processor = CSVChunkProcessor()
         
         # Verificar se a coleção foi criada
@@ -53,7 +53,7 @@ class TestRAGClient(unittest.TestCase):
         print("\n--- Teste: Busca básica ---")
         
         query = "tecnologia"
-        query_vector = self.processor.model.encode(query).tolist()
+        query_vector = self.processor.embedder.encode(query).tolist()
         
         search_results = self.client.query_points(
             collection_name="csv_chunks",
@@ -81,7 +81,7 @@ class TestRAGClient(unittest.TestCase):
         
         # Usar termos que realmente existem nos produtos
         query = "Galaxy"
-        query_vector = self.processor.model.encode(query).tolist()
+        query_vector = self.processor.embedder.encode(query).tolist()
         
         search_results = self.client.query_points(
             collection_name="csv_chunks",
@@ -110,7 +110,7 @@ class TestRAGClient(unittest.TestCase):
         if len(search_results) == 0:
             print("Tentando busca alternativa com 'Eletrônicos'...")
             query = "Eletrônicos"
-            query_vector = self.processor.model.encode(query).tolist()
+            query_vector = self.processor.embedder.encode(query).tolist()
             
             search_results = self.client.query_points(
                 collection_name="csv_chunks",
@@ -136,7 +136,7 @@ class TestRAGClient(unittest.TestCase):
         print("\n--- Teste: Busca em artigos ---")
         
         query = "inteligência artificial"
-        query_vector = self.processor.model.encode(query).tolist()
+        query_vector = self.processor.embedder.encode(query).tolist()
         
         search_results = self.client.query_points(
             collection_name="csv_chunks",
@@ -161,7 +161,7 @@ class TestRAGClient(unittest.TestCase):
         print("\n--- Teste: Busca em documentos ---")
         
         query = "relatório"
-        query_vector = self.processor.model.encode(query).tolist()
+        query_vector = self.processor.embedder.encode(query).tolist()
         
         search_results = self.client.query_points(
             collection_name="csv_chunks",
@@ -186,7 +186,7 @@ class TestRAGClient(unittest.TestCase):
         print("\n--- Teste: Busca em coluna específica ---")
         
         query = "preço"
-        query_vector = self.processor.model.encode(query).tolist()
+        query_vector = self.processor.embedder.encode(query).tolist()
         
         search_results = self.client.query_points(
             collection_name="csv_chunks",
@@ -232,7 +232,7 @@ class TestRAGClient(unittest.TestCase):
             print(f"Recuperando documento original: {csv_file}, linha {row_id}")
             
             # Carregar o CSV original
-            csv_path = Path(__file__).parent.parent / "src" / "mock" / csv_file
+            csv_path = Path(__file__).parent.parent / "src" / "archives" / csv_file
             df = pd.read_csv(csv_path)
             
             # Encontrar a linha original
@@ -268,7 +268,7 @@ class TestRAGClient(unittest.TestCase):
         
         for question in questions:
             print(f"\nPergunta: {question}")
-            query_vector = self.processor.model.encode(question).tolist()
+            query_vector = self.processor.embedder.encode(question).tolist()
             
             search_results = self.client.query_points(
                 collection_name="csv_chunks",
@@ -294,7 +294,7 @@ class TestRAGClient(unittest.TestCase):
         
         for query in queries:
             print(f"\nTestando: '{query}'")
-            query_vector = self.processor.model.encode(query).tolist()
+            query_vector = self.processor.embedder.encode(query).tolist()
             
             search_results = self.client.query_points(
                 collection_name="csv_chunks",
@@ -318,7 +318,7 @@ class TestRAGClient(unittest.TestCase):
         """Testa comportamento com consulta vazia."""
         print("\n--- Teste: Consulta vazia ---")
         
-        query_vector = self.processor.model.encode("").tolist()
+        query_vector = self.processor.embedder.encode("").tolist()
         
         search_results = self.client.query_points(
             collection_name="csv_chunks",
@@ -334,7 +334,7 @@ class TestRAGClient(unittest.TestCase):
         """Testa comportamento com coleção inexistente."""
         print("\n--- Teste: Coleção inexistente ---")
         
-        query_vector = self.processor.model.encode("teste").tolist()
+        query_vector = self.processor.embedder.encode("teste").tolist()
         
         with self.assertRaises(Exception):
             self.client.query_points(

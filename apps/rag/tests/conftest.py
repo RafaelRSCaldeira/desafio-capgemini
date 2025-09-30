@@ -12,11 +12,11 @@ if src_path not in sys.path:
 @pytest.fixture(scope="session")
 def rag_client():
     """Fixture que fornece um cliente RAG configurado para os testes."""
-    from csv_chunk_processor import process_mock_csvs_as_chunks
-    from csv_chunk_processor import CSVChunkProcessor
+    from src.csv_chunk_processor import process_csvs_as_chunks
+    from src.csv_chunk_processor import CSVChunkProcessor
     
-    # Processar CSVs mock
-    results, client = process_mock_csvs_as_chunks()
+    # Processar CSVs reais em src/archives
+    results, client = process_csvs_as_chunks()
     processor = CSVChunkProcessor()
     
     return {

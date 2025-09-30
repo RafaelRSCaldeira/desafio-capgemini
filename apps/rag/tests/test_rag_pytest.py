@@ -7,6 +7,7 @@ import pytest
 import pandas as pd
 from pathlib import Path
 from qdrant_client.models import Filter, FieldCondition, MatchValue
+from csv_chunk_processor import find_top_k_rows, process_csvs_as_chunks
 
 
 class TestRAGPytest:
@@ -32,7 +33,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("tecnologia").tolist()
+        query_vector = processor.embedder.encode("tecnologia").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -55,7 +56,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("smartphone").tolist()
+        query_vector = processor.embedder.encode("smartphone").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -80,7 +81,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("inteligência artificial").tolist()
+        query_vector = processor.embedder.encode("inteligência artificial").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -105,7 +106,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("relatório").tolist()
+        query_vector = processor.embedder.encode("relatório").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -130,7 +131,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("preço").tolist()
+        query_vector = processor.embedder.encode("preço").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -160,7 +161,7 @@ class TestRAGPytest:
         processor = rag_client['processor']
         
         # Fazer uma busca para encontrar um resultado
-        query_vector = processor.model.encode("produto").tolist()
+        query_vector = processor.embedder.encode("produto").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -174,7 +175,7 @@ class TestRAGPytest:
             row_id = result.payload['row_id']
             
             # Carregar o CSV original
-            csv_path = Path(__file__).parent.parent / "src" / "mock" / csv_file
+            csv_path = Path(__file__).parent.parent / "src" / "archives" / csv_file
             df = pd.read_csv(csv_path)
             
             # Encontrar a linha original
@@ -204,7 +205,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode(question).tolist()
+        query_vector = processor.embedder.encode(question).tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -224,7 +225,7 @@ class TestRAGPytest:
         queries = ["celular", "telefone móvel", "smartphone", "dispositivo móvel"]
         
         for query in queries:
-            query_vector = processor.model.encode(query).tolist()
+            query_vector = processor.embedder.encode(query).tolist()
             
             search_results = client.query_points(
                 collection_name="csv_chunks",
@@ -248,7 +249,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("").tolist()
+        query_vector = processor.embedder.encode("").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -264,7 +265,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("teste").tolist()
+        query_vector = processor.embedder.encode("teste").tolist()
         
         with pytest.raises(Exception):
             client.query_points(
@@ -278,7 +279,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("tecnologia").tolist()
+        query_vector = processor.embedder.encode("tecnologia").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -296,7 +297,7 @@ class TestRAGPytest:
         client = rag_client['client']
         processor = rag_client['processor']
         
-        query_vector = processor.model.encode("teste").tolist()
+        query_vector = processor.embedder.encode("teste").tolist()
         
         search_results = client.query_points(
             collection_name="csv_chunks",
@@ -319,3 +320,32 @@ class TestRAGPytest:
             assert isinstance(payload['column_name'], str), "column_name deve ser string"
             assert isinstance(payload['original_value'], (str, type(None))), "original_value deve ser string ou None"
             assert isinstance(payload['chunk_type'], str), "chunk_type deve ser string"
+
+    def test_bruno_lima_bonus_jun_28_2025(self, rag_client):
+        """Garante que a linha do Bruno Lima em 2025-06-28 é recuperada e o bônus está correto (300)."""
+        client = rag_client['client']
+        # Query aiming at exact date
+        results = find_top_k_rows(
+            text="bônus do Bruno Lima no dia 2025-06-28",
+            client=client,
+            k=5,
+        )
+        assert len(results) > 0, "Nenhuma linha retornada para Bruno Lima 2025-06-28"
+        # Find payroll row
+        target = None
+        for r in results:
+            if r.get('file') == 'payroll.csv' and 'Bruno Lima' in r.get('value', ''):
+                target = r
+                break
+        assert target is not None, "Linha de Bruno Lima não encontrada em payroll.csv"
+        # Parse the formatted row to get bonus
+        # value looks like: "employee_id: E002 | name: Bruno Lima | competency: 2025-06 | base_salary: 6000 | bonus: 300 | ... | payment_date: 2025-06-28"
+        parts = [p.strip() for p in target['value'].split('|')]
+        kv = {}
+        for p in parts:
+            if ': ' in p:
+                k_, v_ = p.split(': ', 1)
+                kv[k_.strip()] = v_.strip()
+        assert kv.get('payment_date') == '2025-06-28', "Data incorreta na linha retornada"
+        assert kv.get('name') == 'Bruno Lima', "Nome incorreto na linha retornada"
+        assert kv.get('bonus') == '300', f"Bônus incorreto; esperado 300, obtido {kv.get('bonus')}"
