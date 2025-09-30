@@ -11,7 +11,8 @@ sys_msg_content = """You are a helpful assistant.
 You have access to the following tools: 'search_rag' and 'web_search'.
 Use them when you need to find information to answer the user's question.
 Respond with a tool call when necessary.
-You must always use the search_rag tool before using the web_search tool."""
+You must always use the search_rag tool before using the web_search tool.
+If the retrieved information is not relevant, use the web_search tool to find more information."""
 sys_msg = SystemMessage(content=sys_msg_content)
 
 llm = ChatOllama(model="qwen3:latest", temperature=0)
@@ -35,9 +36,14 @@ builder.add_conditional_edges(
 builder.add_edge("tools", "assistant")
 graph = builder.compile()
 
+def extract_thinking(message: str):
+    message = message.replace("<think>", "")
+    think, answer = message.split("</think>")
+    return think, answer
+
 def generate(message: str) -> str:
     initial_state = {"messages": [sys_msg, HumanMessage(content=message)]}
     final_state = graph.invoke(initial_state)
     print(final_state)
     answer = final_state["messages"][-1].content
-    return answer
+    return extract_thinking(answer)

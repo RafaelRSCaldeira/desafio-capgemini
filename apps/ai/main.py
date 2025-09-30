@@ -17,8 +17,8 @@ def health():
 
 @app.post("/ai/generate/")
 def generate_(request: Request):
-    answer = generate(request.message)
-    return {"message": answer}
+    think, answer = generate(request.message)
+    return {"message": answer, "thinking": think}
 
 if __name__ == "__main__":
     load_dotenv()
