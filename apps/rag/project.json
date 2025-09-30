@@ -1,8 +1,8 @@
 {
-  "name": "ai",
+  "name": "rag",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "sourceRoot": "apps/ai",
+  "sourceRoot": "/apps/rag",
   "targets": {
     "lock": {
       "executor": "@nxlv/python:lock",
@@ -41,7 +41,7 @@
       "executor": "@nxlv/python:ruff-check",
       "outputs": [],
       "options": {
-        "lintFilePatterns": ["ai", "tests"]
+        "lintFilePatterns": ["rag", "tests"]
       },
       "cache": true
     },
@@ -49,7 +49,7 @@
       "executor": "@nxlv/python:ruff-format",
       "outputs": [],
       "options": {
-        "filePatterns": ["ai", "tests"]
+        "filePatterns": ["rag", "tests"]
       },
       "cache": true
     },

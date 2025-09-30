@@ -1,101 +1,94 @@
-# DesafioCapgemini
+# Desafio Capgemini
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Monorepo built with Nx containing:
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+- UI: Next.js 15 + React 19 + TailwindCSS (`apps/ui`)
+- AI API: FastAPI (Python 3.12+) (`apps/ai`)
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Project structure
 
-## Run tasks
-
-To run the dev server for your app, use:
-
-```sh
-npx nx dev 
+```
+apps/
+  ui/   # Next.js frontend (API route proxies to AI)
+  ai/   # FastAPI backend (LLM agent)
 ```
 
-To create a production bundle:
+## Prerequisites
 
-```sh
-npx nx build desafio-capgemini
+- Node.js 20+ and pnpm
+- Python 3.12+
+
+## Quick start
+
+1) Install dependencies at the repo root:
+
+```bash
+pnpm install
 ```
 
-To see all available targets to run for a project, run:
+2) Configure environment variables.
 
-```sh
-npx nx show project desafio-capgemini
+- UI (`apps/ui`): create `.env.local` with:
+
+```env
+# Optional. Override AI endpoint used by /api/ai route
+AI_API=http://localhost:8000/ai/generate
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+- AI (`apps/ai`): create `.env` (if needed) and ensure Python 3.12 is active.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+3) Run both apps in development:
 
-## Add new projects
+Terminal A (AI API):
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/next:app demo
+```bash
+cd apps/ai
+pip install uv
+uv sync
+uv run python main.py
 ```
 
-To generate a new library, use:
+Terminal B (UI):
 
-```sh
-npx nx g @nx/react:lib mylib
+```bash
+cd apps/ui
+pnpm dev
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+The UI will be at `http://localhost:3000` and calls the AI API at `http://localhost:8000/ai/generate` (or the value from `AI_API`).
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## How it works
 
-## Set up CI!
+- The UI sends POST `/api/ai` with `{ message: string }`.
+- The Next.js route at `apps/ui/src/app/api/ai/route.ts` forwards to `AI_API` (default `http://localhost:8000/ai/generate`).
+- The FastAPI app at `apps/ai/main.py` exposes:
+  - `GET /ai/health/`
+  - `POST /ai/generate/` → returns `{ message: string }` from the agent.
 
-### Step 1
+## Scripts
 
-To connect to Nx Cloud, run the following command:
+- UI (`apps/ui`):
+  - `pnpm dev` — start Next.js with Turbopack
+  - `pnpm build` — build production
+  - `pnpm start` — start production server
+  - `pnpm lint` — run eslint
 
-```sh
-npx nx connect
-```
+- AI (`apps/ai`): managed via `uv` and `pyproject.toml`:
+  - `uv sync` — install Python deps
+  - `uv run python main.py` — run FastAPI locally (port 8000 by default)
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+## Tech
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Nx workspace at the root to organize projects
+- Next.js 15, React 19, TailwindCSS for the UI
+- FastAPI, LangChain/Graph for the AI agent
 
-### Step 2
+## Deployment notes
 
-Use the following command to configure a CI workflow for your workspace:
+- UI can be deployed to any Next.js-compatible host.
+- AI can be deployed as a standard FastAPI service (e.g., Uvicorn/Gunicorn).
+- Ensure `AI_API` in the UI environment points to the deployed AI endpoint.
 
-```sh
-npx nx g ci-workflow
-```
+## License
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+MIT
