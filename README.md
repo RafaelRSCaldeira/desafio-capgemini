@@ -9,7 +9,7 @@ Monorepo com três aplicações:
 ## Pré‑requisitos
 - Node.js 20+ e pnpm 9+
 - Python 3.12+ e [uv](https://docs.astral.sh/uv/)
-- (Opcional) [Ollama](https://ollama.ai) com modelo `qwen3:latest`
+- [Ollama](https://ollama.ai) com modelo `qwen3:latest`
 
 
 ## Setup
@@ -133,6 +133,8 @@ Maior limitação atual:
 - Ajustes de observabilidade do agente (trace de ferramentas)
 - Estratégias de re‑ranking e normalização de scores
 - Upload de CSVs pela UI
+
+## Erros comuns
 - Erro de import em testes Python: rode `uv sync -C apps/<svc>` e selecione a venv correta.
 - Lock do Qdrant: finalize processos concorrentes; os testes já isolam com diretórios temporários.
 - UI não chama AI: ajuste `AI_API` ou suba o serviço AI em `http://localhost:8000`.
