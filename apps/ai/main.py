@@ -18,8 +18,8 @@ def health():
 @app.post("/ai/generate/")
 def generate_(request: Request):
     try:
-        think, answer = generate(request.message)
-        return {"message": answer, "thinking": think}
+        think, answer, interaction = generate(request.message)
+        return {"message": answer, "thinking": think, "interaction": interaction}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

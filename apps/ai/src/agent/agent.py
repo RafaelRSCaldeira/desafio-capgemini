@@ -1,6 +1,7 @@
 from langgraph.graph import START, StateGraph, END # Adicionado END para clareza
 from langgraph.prebuilt import tools_condition, ToolNode
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.load import load
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import MessagesState
 from langchain_ollama import ChatOllama
@@ -46,6 +47,7 @@ def extract_thinking(message: str):
 def generate(message: str) -> str:
     initial_state = {"messages": [sys_msg, HumanMessage(content=message)]}
     final_state = graph.invoke(initial_state, config={"configurable": {"thread_id": "1"}})
-    print(final_state)
     answer = final_state["messages"][-1].content
-    return extract_thinking(answer)
+    interaction = load(final_state["messages"])
+    think, answer = extract_thinking(answer)
+    return think, answer, interaction

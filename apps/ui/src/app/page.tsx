@@ -37,6 +37,7 @@ export default function Page() {
         const content = await response.json();
         const mainMessage: string = content?.message?.message ?? '';
         const thinking: string | undefined = content?.message?.thinking;
+        const rawData = content?.message?.interaction ?? "";
 
         // Escape HTML to safely embed inside <pre>
         const escapeHtml = (s: string) =>
@@ -49,7 +50,9 @@ export default function Page() {
           ? `\n\n<div class="mt-4">\n  <details class="group rounded-lg border border-white/10 bg-white/5">\n    <summary class="cursor-pointer select-none list-none px-3 py-2 flex items-center gap-2 text-sm text-white/80">\n      <svg class="h-3 w-3 text-white/60 transition-transform group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.23 14.27a.75.75 0 0 1 0-1.06L10.44 10 7.23 6.79a.75.75 0 1 1 1.06-1.06l3.75 3.75a.75.75 0 0 1 0 1.06l-3.75 3.75a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd"/></svg>\n      <span class="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide rounded bg-indigo-500/15 text-indigo-300/90 border border-indigo-500/20">Thinking</span>\n      <span>Mostrar raciocínio</span>\n    </summary>\n    <div class="border-t border-white/10">\n      <pre class="font-mono text-[12px] leading-5 whitespace-pre-wrap max-h-64 overflow-auto bg-[#0b1220] p-4 rounded-b-lg text-white/80">${escapeHtml(thinking)}</pre>\n      <div class="px-4 pb-3 text-[10px] text-white/40">Gerado pelo modelo; pode conter erros.</div>\n    </div>\n  </details>\n</div>`
           : '';
 
-        systemMessage = { role: 'system', message: mainMessage + thinkingBlock };
+        const downloadJson = `\n\n<div class="mt-2">\n  <button id="download-json-${Date.now()}" class="text-[11px] px-2 py-1 rounded border border-white/15 bg-white/5 text-white/70 hover:text-white">⬇️ Baixar JSON</button>\n</div>`;
+
+        systemMessage = { role: 'system', message: mainMessage + thinkingBlock + downloadJson, interaction: rawData };
       }
 
       setMessages((prev) => {
@@ -130,7 +133,20 @@ export default function Page() {
                   </div>
                 )}
                 {messages.map((msg, index) => (
-                  <div key={index}>
+                  <div key={index} onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.id && target.id.startsWith('download-json-') && msg.role === 'system') {
+                      const blob = new Blob([JSON.stringify(msg.interaction ?? {}, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `ai-response-${index}.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      URL.revokeObjectURL(url);
+                    }
+                  }}>
                     <Message message={msg.message} role={msg.role} />
                   </div>
                 ))}
