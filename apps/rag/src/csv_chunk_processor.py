@@ -245,9 +245,11 @@ def process_csvs_as_chunks(
     rows_per_window: int = 20,
     include_cell_chunks: bool = True,
     include_row_windows: bool = True,
+    client: Optional[QdrantClient] = None,
 ):
     processor = CSVChunkProcessor()
-    client = QdrantClient(path=Path(__file__).parent / "db")
+    if client is None:
+        client = QdrantClient(path=Path(__file__).parent / "db")
 
     results: List[Dict[str, Any]] = []
     global_chunk_id = 1

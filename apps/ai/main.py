@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import uvicorn
 from dotenv import load_dotenv
 import os
@@ -17,8 +17,11 @@ def health():
 
 @app.post("/ai/generate/")
 def generate_(request: Request):
-    think, answer = generate(request.message)
-    return {"message": answer, "thinking": think}
+    try:
+        think, answer = generate(request.message)
+        return {"message": answer, "thinking": think}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     load_dotenv()

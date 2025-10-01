@@ -1,6 +1,7 @@
 from langgraph.graph import START, StateGraph, END # Adicionado END para clareza
 from langgraph.prebuilt import tools_condition, ToolNode
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import MessagesState
 from langchain_ollama import ChatOllama
 
@@ -10,14 +11,15 @@ from src.tools.web_search import web_search
 sys_msg_content = """You are a helpful assistant.
 You have access to the following tools: 'search_rag' and 'web_search'.
 Use them when you need to find information to answer the user's question.
-Respond with a tool call when necessary.
-You must always use the search_rag tool before using the web_search tool.
+When asked about any financial information, you MUST use the search_rag tool to find the information.
+Always cite the source of the information you provide, even if no tool was used.
 If the retrieved information is not relevant, use the web_search tool to find more information."""
 sys_msg = SystemMessage(content=sys_msg_content)
 
 llm = ChatOllama(model="qwen3:latest", temperature=0)
 tools = [search_rag, web_search]
 llm_with_tools = llm.bind_tools(tools)
+memory = MemorySaver()
 
 def assistant(state: MessagesState):
     result = llm_with_tools.invoke(state["messages"])
@@ -34,7 +36,7 @@ builder.add_conditional_edges(
     tools_condition,
 )
 builder.add_edge("tools", "assistant")
-graph = builder.compile()
+graph = builder.compile(checkpointer=memory)
 
 def extract_thinking(message: str):
     message = message.replace("<think>", "")
@@ -43,7 +45,7 @@ def extract_thinking(message: str):
 
 def generate(message: str) -> str:
     initial_state = {"messages": [sys_msg, HumanMessage(content=message)]}
-    final_state = graph.invoke(initial_state)
+    final_state = graph.invoke(initial_state, config={"configurable": {"thread_id": "1"}})
     print(final_state)
     answer = final_state["messages"][-1].content
     return extract_thinking(answer)

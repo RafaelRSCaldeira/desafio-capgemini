@@ -150,14 +150,6 @@ export default function Page() {
                 <li>AI: Pytest com TestClient (mock de generate)</li>
                 <li>RAG: Pytest validando busca por linhas e soma de bônus (Ana Souza 2025 = 2800)</li>
               </ul>
-              <div className="mt-6 rounded-lg border border-white/10 bg-black/30 p-4 text-white/80 text-sm">
-                <p className="font-mono">Como executar:</p>
-                <pre className="mt-2 whitespace-pre-wrap text-xs">
-pnpm --filter ui test
-uv run -q -C apps/ai pytest -q
-uv run -q -C apps/rag pytest -q
-                </pre>
-              </div>
 
               <div className="mt-6 flex gap-3">
                 <button
@@ -218,6 +210,25 @@ uv run -q -C apps/rag pytest -q
                   className="px-4 py-2 rounded-lg bg-white/10 text-white disabled:opacity-50"
                 >
                   {testLoading ? 'Executando todos...' : 'Executar todos'}
+                </button>
+                <button
+                  disabled={testLoading}
+                  onClick={async () => {
+                    setTestLoading(true);
+                    setTestOutput('');
+                    try {
+                      const res = await fetch('/api/tests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: 'ui' as any }) });
+                      const data = await res.json();
+                      setTestOutput(data.output || JSON.stringify(data));
+                    } catch (e) {
+                      setTestOutput('Erro ao executar testes: ' + String(e));
+                    } finally {
+                      setTestLoading(false);
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg bg-white/10 text-white disabled:opacity-50"
+                >
+                  {testLoading ? 'Executando UI...' : 'Executar testes UI'}
                 </button>
               </div>
 

@@ -91,7 +91,11 @@ class TestRAGClient(unittest.TestCase):
                     FieldCondition(
                         key="csv_file",
                         match=MatchValue(value="products.csv")
-                    )
+                    ),
+                    FieldCondition(
+                        key="chunk_type",
+                        match=MatchValue(value="cell")
+                    ),
                 ]
             ),
             limit=3
@@ -104,7 +108,9 @@ class TestRAGClient(unittest.TestCase):
         
         print(f"Encontrados {len(search_results)} resultados de produtos para '{query}'")
         for i, result in enumerate(search_results):
-            print(f"  {i+1}. {result.payload['column_name']}: {result.payload['original_value']}")
+            col = result.payload.get('column_name', 'field')
+            val = result.payload.get('original_value', '')
+            print(f"  {i+1}. {col}: {val}")
         
         # Se não encontrar resultados para "Galaxy", tentar com "Eletrônicos"
         if len(search_results) == 0:
@@ -216,7 +222,7 @@ class TestRAGClient(unittest.TestCase):
         
         # Fazer uma busca para encontrar um resultado
         query = "produto"
-        query_vector = self.processor.model.encode(query).tolist()
+        query_vector = self.processor.embedder.encode(query).tolist()
         
         search_results = self.client.query_points(
             collection_name="csv_chunks",
@@ -278,7 +284,9 @@ class TestRAGClient(unittest.TestCase):
             
             print(f"  Resposta: {len(search_results)} resultados encontrados")
             for i, result in enumerate(search_results):
-                print(f"    {i+1}. {result.payload['csv_file']} - {result.payload['column_name']}: {result.payload['original_value'][:60]}...")
+                col = result.payload.get('column_name', 'field')
+                val = result.payload.get('original_value', '')
+                print(f"    {i+1}. {result.payload.get('csv_file','?')} - {col}: {str(val)[:60]}...")
     
     def test_semantic_similarity(self):
         """Testa similaridade semântica com sinônimos."""
@@ -312,7 +320,8 @@ class TestRAGClient(unittest.TestCase):
             
             print(f"  Resultados: {len(search_results)}")
             for i, result in enumerate(search_results):
-                print(f"    {i+1}. Score: {result.score:.3f} - {result.payload['original_value']}")
+                val = result.payload.get('original_value', '')
+                print(f"    {i+1}. Score: {result.score:.3f} - {val}")
     
     def test_empty_query(self):
         """Testa comportamento com consulta vazia."""

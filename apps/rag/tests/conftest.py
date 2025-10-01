@@ -12,11 +12,21 @@ if src_path not in sys.path:
 @pytest.fixture(scope="session")
 def rag_client():
     """Fixture que fornece um cliente RAG configurado para os testes."""
-    from src.csv_chunk_processor import process_csvs_as_chunks
-    from src.csv_chunk_processor import CSVChunkProcessor
+    import sys, os
+    # Ensure src is importable when running from apps/rag
+    src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))
+    if src_path not in sys.path:
+        sys.path.insert(0, src_path)
+    from csv_chunk_processor import process_csvs_as_chunks
+    from csv_chunk_processor import CSVChunkProcessor
     
     # Processar CSVs reais em src/archives
-    results, client = process_csvs_as_chunks()
+    # Use a fresh client/path per session to avoid concurrent access issues
+    from qdrant_client import QdrantClient
+    import tempfile
+    tmp_dir = tempfile.mkdtemp(prefix="qdrant-db-")
+    client = QdrantClient(path=tmp_dir)
+    results, client = process_csvs_as_chunks(client=client)
     processor = CSVChunkProcessor()
     
     return {
