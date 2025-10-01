@@ -3,7 +3,7 @@ import { marked } from "marked";
 import DOMPurify from "isomorphic-dompurify";
 import { useCallback } from "react";
 
-export default function Message({ message, role }: ChatMessage) {
+export default function Message({ message, role, tts }: ChatMessage) {
   // Converter markdown em HTML
   const rawHtml = marked(message, { breaks: true, gfm: true }) as string;
   const safeHtml = DOMPurify.sanitize(rawHtml);
@@ -12,7 +12,7 @@ export default function Message({ message, role }: ChatMessage) {
     try {
       const synth = window.speechSynthesis;
       if (!synth) return;
-      const utter = new SpeechSynthesisUtterance(stripHtml(message));
+      const utter = new SpeechSynthesisUtterance(stripHtml(tts ?? message));
       utter.rate = 1.0;
       utter.pitch = 1.0;
       synth.cancel();
@@ -21,6 +21,16 @@ export default function Message({ message, role }: ChatMessage) {
       // silencioso
     }
   }, [message]);
+
+  const stop = useCallback(() => {
+    try {
+      const synth = window.speechSynthesis;
+      if (!synth) return;
+      synth.cancel();
+    } catch (_) {
+      // silencioso
+    }
+  }, []);
 
   const stripHtml = (html: string) => {
     if (typeof document === 'undefined') return html;
@@ -39,14 +49,24 @@ export default function Message({ message, role }: ChatMessage) {
       <div className="flex items-start gap-2">
         <div className="flex-1" dangerouslySetInnerHTML={{ __html: safeHtml }} />
         {role === 'system' && (
-          <button
-            aria-label="Ouvir resposta"
-            onClick={speak}
-            className="shrink-0 text-xs px-2 py-1 rounded border border-white/15 bg-white/5 text-white/70 hover:text-white"
-            title="Ouvir resposta"
-          >
-            🔊
-          </button>
+          <div className="flex gap-1">
+            <button
+              aria-label="Ouvir resposta"
+              onClick={speak}
+              className="shrink-0 text-xs px-2 py-1 rounded border border-white/15 bg-white/5 text-white/70 hover:text-white"
+              title="Ouvir resposta"
+            >
+              🔊
+            </button>
+            <button
+              aria-label="Parar fala"
+              onClick={stop}
+              className="shrink-0 text-xs px-2 py-1 rounded border border-white/15 bg-white/5 text-white/70 hover:text-white"
+              title="Parar fala"
+            >
+              ⏹️
+            </button>
+          </div>
         )}
       </div>
     </div>

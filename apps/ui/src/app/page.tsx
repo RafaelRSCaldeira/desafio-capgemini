@@ -52,7 +52,7 @@ export default function Page() {
 
         const downloadJson = `\n\n<div class="mt-2">\n  <button id="download-json-${Date.now()}" class="text-[11px] px-2 py-1 rounded border border-white/15 bg-white/5 text-white/70 hover:text-white">⬇️ Baixar JSON</button>\n</div>`;
 
-        systemMessage = { role: 'system', message: mainMessage + thinkingBlock + downloadJson, interaction: rawData };
+        systemMessage = { role: 'system', message: mainMessage + thinkingBlock + downloadJson, interaction: rawData, tts: mainMessage };
       }
 
       setMessages((prev) => {
@@ -147,7 +147,7 @@ export default function Page() {
                       URL.revokeObjectURL(url);
                     }
                   }}>
-                    <Message message={msg.message} role={msg.role} />
+                    <Message message={msg.message} role={msg.role} tts={msg.tts} />
                   </div>
                 ))}
                 <div ref={bottomRef} />
